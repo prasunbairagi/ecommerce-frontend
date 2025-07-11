@@ -5,7 +5,9 @@ import {
   GlobeAmericasIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon } from "@heroicons/react/20/solid";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProductAction } from "../../../redux/slices/products/productsSlice";
 const product = {
   name: "Basic Tee",
   price: "$35",
@@ -83,16 +85,20 @@ function classNames(...classes) {
 }
 
 export default function Product() {
+  const dispatch = useDispatch()
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
 
   //Add to cart handler
   const addToCartHandler = (item) => {};
-  let productDetails = {};
-  let productColor;
-  let productSize;
   let cartItems = [];
+  const {id} = useParams();
 
+  useEffect(()=>{
+    dispatch(fetchProductAction(id))
+  }, [id])
+  const {loading,error, product: {product}} = useSelector(state => state?.products)
+  console.log('product',product)
   return (
     <div className="bg-white">
       <main className="mx-auto mt-8 max-w-2xl px-4 pb-16 sm:px-6 sm:pb-24 lg:max-w-7xl lg:px-8">
@@ -100,10 +106,10 @@ export default function Product() {
           <div className="lg:col-span-5 lg:col-start-8">
             <div className="flex justify-between">
               <h1 className="text-xl font-medium text-gray-900">
-                {productDetails?.product?.name}
+                {product?.name}
               </h1>
               <p className="text-xl font-medium text-gray-900">
-                $ {productDetails?.product?.price}.00
+                $ {product?.price}.00
               </p>
             </div>
             {/* Reviews */}
@@ -111,7 +117,7 @@ export default function Product() {
               <h2 className="sr-only">Reviews</h2>
               <div className="flex items-center">
                 <p className="text-sm text-gray-700">
-                  {productDetails?.product?.averageRating}
+                  {product?.totalReviews}
                   <span className="sr-only"> out of 5 stars</span>
                 </p>
                 <div className="ml-1 flex items-center">
@@ -119,7 +125,7 @@ export default function Product() {
                     <StarIcon
                       key={rating}
                       className={classNames(
-                        productDetails?.product?.averageRating > rating
+                        product?.totalReviews > rating
                           ? "text-yellow-400"
                           : "text-gray-200",
                         "h-5 w-5 flex-shrink-0"
@@ -135,14 +141,14 @@ export default function Product() {
                   <a
                     href="#"
                     className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                    {productDetails?.product?.totalReviews} total reviews
+                    {product?.totalReviews} total reviews
                   </a>
                 </div>
               </div>
               {/* leave a review */}
 
               <div className="mt-4">
-                <Link to={`/add-review/${productDetails?.product?._id}`}>
+                <Link to={`/add-review/${product?._id}`}>
                   <h3 className="text-sm font-medium text-blue-600">
                     Leave a review
                   </h3>
@@ -156,13 +162,13 @@ export default function Product() {
             <h2 className="sr-only">Images</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-3 lg:gap-8">
-              {product.images.map((image) => (
+              {product?.images?.map((image) => (
                 <img
-                  key={image.id}
-                  src={image.imageSrc}
-                  alt={image.imageAlt}
+                  key={image}
+                  src={image}
+                  alt={image}
                   className={classNames(
-                    image.primary
+                    image
                       ? "lg:col-span-2 lg:row-span-2"
                       : "hidden lg:block",
                     "rounded-lg"
@@ -180,7 +186,7 @@ export default function Product() {
                 <div className="flex items-center space-x-3">
                   <RadioGroup value={selectedColor} onChange={setSelectedColor}>
                     <div className="mt-4 flex items-center space-x-3">
-                      {productColor?.map((color) => (
+                      {product?.colors?.map((color) => (
                         <RadioGroup.Option
                           key={color}
                           value={color}
@@ -192,7 +198,7 @@ export default function Product() {
                             )
                           }>
                           <RadioGroup.Label as="span" className="sr-only">
-                            {color.name}
+                            {color}
                           </RadioGroup.Label>
                           <span
                             style={{ backgroundColor: color }}
@@ -219,7 +225,7 @@ export default function Product() {
                   className="mt-2">
                   {/* Choose size */}
                   <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-                    {productSize?.map((size) => (
+                    {product?.sizes?.map((size) => (
                       <RadioGroup.Option
                         key={size}
                         value={size}
@@ -258,7 +264,7 @@ export default function Product() {
             <div className="mt-10">
               <h2 className="text-sm font-medium text-gray-900">Description</h2>
               <div className="prose prose-sm mt-4 text-gray-500">
-                {productDetails?.product?.description}
+                {product?.description}
               </div>
             </div>
 
@@ -301,9 +307,9 @@ export default function Product() {
           </h2>
 
           <div className="mt-6 space-y-10 divide-y divide-gray-200 border-t border-b border-gray-200 pb-10">
-            {productDetails?.product?.reviews.map((review) => (
+            {product?.reviews?.map((review) => (
               <div
-                key={review._id}
+                key={review?._id}
                 className="pt-10 lg:grid lg:grid-cols-12 lg:gap-x-8">
                 <div className="lg:col-span-8 lg:col-start-5 xl:col-span-9 xl:col-start-4 xl:grid xl:grid-cols-3 xl:items-start xl:gap-x-8">
                   <div className="flex items-center xl:col-span-1">
@@ -322,7 +328,7 @@ export default function Product() {
                       ))}
                     </div>
                     <p className="ml-3 text-sm text-gray-700">
-                      {review.rating}
+                      {review?.rating}
                       <span className="sr-only"> out of 5 stars</span>
                     </p>
                   </div>
@@ -334,7 +340,7 @@ export default function Product() {
 
                     <div
                       className="mt-3 space-y-6 text-sm text-gray-500"
-                      dangerouslySetInnerHTML={{ __html: review.content }}
+                      dangerouslySetInnerHTML={{ __html: review?.content }}
                     />
                   </div>
                 </div>
@@ -342,9 +348,9 @@ export default function Product() {
                 <div className="mt-6 flex items-center text-sm lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:mt-0 lg:flex-col lg:items-start xl:col-span-3">
                   <p className="font-medium text-gray-900">{review.author}</p>
                   <time
-                    dateTime={review.datetime}
+                    dateTime={review?.datetime}
                     className="ml-4 border-l border-gray-200 pl-4 text-gray-500 lg:ml-0 lg:mt-2 lg:border-0 lg:pl-0">
-                    {review.date}
+                    {review?.date}
                   </time>
                 </div>
               </div>
